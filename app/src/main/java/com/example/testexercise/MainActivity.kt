@@ -17,7 +17,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,14 +33,17 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+
 fun Greeting(modifier: Modifier = Modifier) {
     var text1 by remember { mutableStateOf("Starting task1...\n") }
     var text2 by remember { mutableStateOf("Starting task2...\n") }
 
     LaunchedEffect(Unit) {
-        TODO("Mach aus task2 eine Coroutine")
-        // Frage an dich: Was würde passieren wenn es keine ist? Was ist der Vorteil?
-        text2 = task2()
+        // Start task2 synchron, blocking task1 if not delayed
+        GlobalScope.launch {
+            text2 = task2()
+        }
+        // Start task1 after task2
         text1 = task1()
 
     }
@@ -58,11 +60,13 @@ fun Greeting(modifier: Modifier = Modifier) {
 }
 
 fun task1(): String {
-    TODO("Gebe 'Hello' zurück und den namen des Threads auf dem task1 ausgeführt wird")
+    return "Hello\n${Thread.currentThread().name}\n"
+
 }
 
 suspend fun task2(): String {
-    TODO("Gebe den Dispatcher zurück")
-    TODO("Gebe 'World' und den namen des Threads zurück")
-    TODO("Passe die funktion so an das zuerst task1 ausgeführt wird")
+    withContext(Dispatchers.IO) {
+        delay(3000L) // 3 Sekunden warten
+    }
+    return "World!!!\n${Thread.currentThread().name}\n"
 }
